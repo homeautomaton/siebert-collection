@@ -7,6 +7,7 @@
     <style>
         .thumbnail {
             display: inline-block;
+            position: relative;
             text-align: center;
             margin: 10px;
         }
@@ -25,7 +26,9 @@
             font-size: 20px;
             font-weight: bold;
             z-index: 1;
+            pointer-events: none; /* Ensures the watermark doesn't interfere with image clicks */
         }
+
     </style>
 </head>
 <body>
