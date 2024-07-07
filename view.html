@@ -97,8 +97,9 @@
 
         function loadImage(index) {
             const image = images[index];
-            document.querySelector('.content img').src = "images/" + image.file;
-            document.querySelector('.content img').alt = image.id;
+            const imgElement = document.querySelector('.content img');
+            imgElement.src = "images/" + image.file;
+            imgElement.alt = image.id;
             document.querySelector('.navigation span').textContent = `${image.id} ${image.size}`;
             history.replaceState(null, '', `?image=${index}`);
             resetPauseTimer();
@@ -200,4 +201,3 @@
     </div>
 </body>
 </html>
-
