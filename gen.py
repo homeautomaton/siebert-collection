@@ -47,13 +47,12 @@ images = [
            {"file":"IMG_20240602_140141736.jpg", "id":"00200","size":"8x10"}
          ]  # Add your image filenames here
 
-# Template for the image page
 template = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Image {ID}</title>
+    <title>Image {IMAGE_ALT}</title>
     <style>
         body, html {{
             margin: 0;
@@ -90,12 +89,30 @@ template = """
         .navigation a:hover {{
             text-decoration: underline;
         }}
+        .timer {{
+            margin-left: 10px;
+            font-weight: bold;
+            color: #FF0000;
+        }}
     </style>
     <script>
         let autoAdvanceInterval = 5000; // 5 seconds
-        let pauseDuration = 15000; // 15 seconds
+        let pauseDurationMouse = 30000; // 30 seconds for mouse movement
+        let pauseDurationLink = 60000; // 60 seconds for pause link
         let autoAdvanceTimer, pauseTimer;
         let isPaused = false;
+        let countdownElement;
+        let countdownTime;
+
+        function updateCountdown() {{
+            if (countdownTime > 0) {{
+                countdownElement.textContent = `Resuming in ${{Math.ceil(countdownTime / 1000)}}s`;
+                countdownTime -= 1000;
+                setTimeout(updateCountdown, 1000);
+            }} else {{
+                countdownElement.textContent = '';
+            }}
+        }}
 
         function nextImage() {{
             if (!isPaused) {{
@@ -107,50 +124,50 @@ template = """
             autoAdvanceTimer = setInterval(nextImage, autoAdvanceInterval);
         }}
 
-        function pauseAutoAdvance() {{
+        function pauseAutoAdvance(duration) {{
             clearInterval(autoAdvanceTimer);
             clearTimeout(pauseTimer);
             isPaused = true;
+            countdownTime = duration;
             pauseTimer = setTimeout(() => {{
                 isPaused = false;
+                countdownElement.textContent = '';
                 startAutoAdvance();
-            }}, pauseDuration);
+            }}, duration);
+            updateCountdown();
         }}
 
         function manualAdvance() {{
             clearTimeout(pauseTimer);
             isPaused = false;
+            countdownElement.textContent = '';
             nextImage();
         }}
 
         function pauseSlideshow() {{
-            clearInterval(autoAdvanceTimer);
-            clearTimeout(pauseTimer);
-            isPaused = true;
-            pauseTimer = setTimeout(() => {{
-                isPaused = false;
-                startAutoAdvance();
-            }}, pauseDuration);
+            pauseAutoAdvance(pauseDurationLink);
         }}
 
-        document.addEventListener('mousemove', pauseAutoAdvance);
-        document.addEventListener('keydown', pauseAutoAdvance);
+        document.addEventListener('mousemove', () => pauseAutoAdvance(pauseDurationMouse));
+        document.addEventListener('keydown', () => pauseAutoAdvance(pauseDurationMouse));
 
         window.onload = () => {{
+            countdownElement = document.getElementById('countdown');
             startAutoAdvance();
         }};
     </script>
 </head>
 <body>
     <div class="content">
-        <img src="{IMAGE_SRC}">
+        <img src="{IMAGE_SRC}" alt="{IMAGE_ALT}">
     </div>
     <div class="navigation">
-        {ID} {SIZE} |
+        {IMAGE_ALT} {SIZE} |
         <a href="{PREV_IMAGE}">Previous</a> |
         <a href="../index.html">Index</a> |
         <a href="{NEXT_IMAGE}" onclick="manualAdvance(); return false;">Next</a> |
         <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
+        <span id="countdown" class="timer"></span>
     </div>
 </body>
 </html>
@@ -162,7 +179,7 @@ for i, image in enumerate(images):
     base = image["file"].replace(".jpg","").replace(".JPG","")
     
     html_content = template.format(
-        ID=image['id'],
+        IMAGE_ALT=image['id'],
         SIZE=image['size'],
         IMAGE_SRC=f"{image['file']}",
         PREV_IMAGE=prev_image,

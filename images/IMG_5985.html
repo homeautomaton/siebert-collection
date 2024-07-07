@@ -40,12 +40,30 @@
         .navigation a:hover {
             text-decoration: underline;
         }
+        .timer {
+            margin-left: 10px;
+            font-weight: bold;
+            color: #FF0000;
+        }
     </style>
     <script>
         let autoAdvanceInterval = 5000; // 5 seconds
-        let pauseDuration = 15000; // 15 seconds
+        let pauseDurationMouse = 30000; // 30 seconds for mouse movement
+        let pauseDurationLink = 60000; // 60 seconds for pause link
         let autoAdvanceTimer, pauseTimer;
         let isPaused = false;
+        let countdownElement;
+        let countdownTime;
+
+        function updateCountdown() {
+            if (countdownTime > 0) {
+                countdownElement.textContent = `Resuming in ${Math.ceil(countdownTime / 1000)}s`;
+                countdownTime -= 1000;
+                setTimeout(updateCountdown, 1000);
+            } else {
+                countdownElement.textContent = '';
+            }
+        }
 
         function nextImage() {
             if (!isPaused) {
@@ -57,43 +75,42 @@
             autoAdvanceTimer = setInterval(nextImage, autoAdvanceInterval);
         }
 
-        function pauseAutoAdvance() {
+        function pauseAutoAdvance(duration) {
             clearInterval(autoAdvanceTimer);
             clearTimeout(pauseTimer);
             isPaused = true;
+            countdownTime = duration;
             pauseTimer = setTimeout(() => {
                 isPaused = false;
+                countdownElement.textContent = '';
                 startAutoAdvance();
-            }, pauseDuration);
+            }, duration);
+            updateCountdown();
         }
 
         function manualAdvance() {
             clearTimeout(pauseTimer);
             isPaused = false;
+            countdownElement.textContent = '';
             nextImage();
         }
 
         function pauseSlideshow() {
-            clearInterval(autoAdvanceTimer);
-            clearTimeout(pauseTimer);
-            isPaused = true;
-            pauseTimer = setTimeout(() => {
-                isPaused = false;
-                startAutoAdvance();
-            }, pauseDuration);
+            pauseAutoAdvance(pauseDurationLink);
         }
 
-        document.addEventListener('mousemove', pauseAutoAdvance);
-        document.addEventListener('keydown', pauseAutoAdvance);
+        document.addEventListener('mousemove', () => pauseAutoAdvance(pauseDurationMouse));
+        document.addEventListener('keydown', () => pauseAutoAdvance(pauseDurationMouse));
 
         window.onload = () => {
+            countdownElement = document.getElementById('countdown');
             startAutoAdvance();
         };
     </script>
 </head>
 <body>
     <div class="content">
-        <img src="IMG_5985.JPG">
+        <img src="IMG_5985.JPG" alt="59281">
     </div>
     <div class="navigation">
         59281 16x12 |
@@ -101,6 +118,7 @@
         <a href="../index.html">Index</a> |
         <a href="IMG_5998.html" onclick="manualAdvance(); return false;">Next</a> |
         <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
+        <span id="countdown" class="timer"></span>
     </div>
 </body>
 </html>
