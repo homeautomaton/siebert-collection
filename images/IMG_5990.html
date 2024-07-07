@@ -105,6 +105,16 @@
             }
         }
 
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', (event) => {
             startSlideshow();
             document.addEventListener('keydown', (event) => {
@@ -124,7 +134,8 @@
         <a href="IMG_5977.html">Previous</a> |
         <a href="../index.html">Index</a> |
         <a href="IMG_5978.html" onclick="manualAdvance(); return false;">Next</a> |
-        <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
+        <a href="#" onclick="toggleFullscreen(); return false;">Full-Screen</a>
+        <a href="#" onclick="pauseSlideshow(); return false;">Pause</a> |
         <span id="countdown" class="timer"></span>
     </div>
 </body>
