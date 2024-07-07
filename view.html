@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bonnie Siebert Art Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        img {
+            max-width: 100%;
+            max-height: 90vh;
+        }
+        .navigation {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+        }
+        .timer {
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+    </style>
+    <script>
+        const images = [{'file': 'images/IMG_5964.JPG', 'id': '10674', 'size': '36x12'}, {'file': 'images/IMG_5984.JPG', 'id': '10675', 'size': '24x18'}];
+        let currentIndex = 0;
+        let timer;
+        let countdown = 60;
+        let isPaused = false;
+
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        function loadImage(index) {
+            const image = images[index];
+            document.querySelector('.content img').src = image.file;
+            document.querySelector('.content img').alt = image.id;
+            document.querySelector('.navigation span').textContent = `${image.id} ${image.size}`;
+            resetPauseTimer();
+        }
+
+        function nextImage() {
+            currentIndex = (currentIndex + 1) % images.length;
+            loadImage(currentIndex);
+        }
+
+        function prevImage() {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            loadImage(currentIndex);
+        }
+
+        function startSlideshow() {
+            timer = setInterval(nextImage, 5000);
+        }
+
+        function pauseSlideshow() {
+            clearInterval(timer);
+            clearInterval(countdownInterval);
+            isPaused = true;
+            countdown = 60;
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+            pauseTimeout = setTimeout(() => {
+                isPaused = false;
+                startSlideshow();
+                clearInterval(countdownInterval);
+                document.getElementById('countdown').style.display = 'none';
+            }, 60000);
+        }
+
+        function resetPauseTimer() {
+            clearTimeout(pauseTimeout);
+            pauseTimeout = setTimeout(() => {
+                isPaused = false;
+                startSlideshow();
+                clearInterval(countdownInterval);
+                document.getElementById('countdown').style.display = 'none';
+            }, 60000);
+        }
+
+        function updateCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            const minutes = Math.floor(countdown / 60);
+            const seconds = countdown % 60;
+            countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            countdownElement.style.display = countdown > 0 ? 'inline' : 'none';
+            if (countdown > 0) {
+                countdown--;
+            } else {
+                clearInterval(countdownInterval);
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const imageIndex = getQueryParam('image');
+            currentIndex = imageIndex !== null ? parseInt(imageIndex) : 0;
+            loadImage(currentIndex);
+            startSlideshow();
+            document.addEventListener('keydown', (event) => {
+                if (event.code === 'Space') {
+                    pauseSlideshow();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="content">
+        <img src="" alt="">
+    </div>
+    <div class="navigation">
+        <span></span> |
+        <a href="#" onclick="prevImage(); return false;">Previous</a> |
+        <a href="index.html">Index</a> |
+        <a href="#" onclick="nextImage(); return false;">Next</a> |
+        <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
+        <span id="countdown" class="timer"></span> |
+        <a href="#" onclick="toggleFullscreen(); return false;">Full-Screen</a>
+    </div>
+</body>
+</html>
