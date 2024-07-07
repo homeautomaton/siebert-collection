@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,9 +82,12 @@
            {"file":"IMG_20240602_140112161.jpg", "id":"00146","size":"4x6"},
            {"file":"IMG_5975.JPG", "id":"00199","size":"16x20"},
            {"file":"IMG_20240602_140141736.jpg", "id":"00200","size":"8x10"} ];
+        ];
         let currentIndex = 0;
         let timer;
         let countdown = 60;
+        let countdownInterval;
+        let pauseTimeout;
         let isPaused = false;
 
         function getQueryParam(param) {
@@ -98,6 +100,7 @@
             document.querySelector('.content img').src = "images/" + image.file;
             document.querySelector('.content img').alt = image.id;
             document.querySelector('.navigation span').textContent = `${image.id} ${image.size}`;
+            history.replaceState(null, '', `?image=${index}`);
             resetPauseTimer();
         }
 
@@ -112,26 +115,18 @@
         }
 
         function startSlideshow() {
+            clearInterval(timer);
             timer = setInterval(nextImage, 5000);
         }
 
         function pauseSlideshow() {
             clearInterval(timer);
+            clearTimeout(pauseTimeout);
             clearInterval(countdownInterval);
             isPaused = true;
             countdown = 60;
             updateCountdown();
             countdownInterval = setInterval(updateCountdown, 1000);
-            pauseTimeout = setTimeout(() => {
-                isPaused = false;
-                startSlideshow();
-                clearInterval(countdownInterval);
-                document.getElementById('countdown').style.display = 'none';
-            }, 60000);
-        }
-
-        function resetPauseTimer() {
-            clearTimeout(pauseTimeout);
             pauseTimeout = setTimeout(() => {
                 isPaused = false;
                 startSlideshow();
@@ -153,6 +148,16 @@
             }
         }
 
+        function resetPauseTimer() {
+            if (isPaused) {
+                clearTimeout(pauseTimeout);
+                clearInterval(countdownInterval);
+                isPaused = false;
+                document.getElementById('countdown').style.display = 'none';
+                startSlideshow();
+            }
+        }
+
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
@@ -170,7 +175,11 @@
             startSlideshow();
             document.addEventListener('keydown', (event) => {
                 if (event.code === 'Space') {
-                    pauseSlideshow();
+                    if (isPaused) {
+                        resetPauseTimer();
+                    } else {
+                        pauseSlideshow();
+                    }
                 }
             });
         });
@@ -191,3 +200,4 @@
     </div>
 </body>
 </html>
+
