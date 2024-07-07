@@ -1,6 +1,3 @@
-import os
-
-# List of images
 images = [ 
            {"file":"IMG_5964.JPG", "id":"10674","size":"16x12"},
            {"file":"IMG_5966.JPG", "id":"34982","size":"16x12"},
@@ -89,9 +86,10 @@ template = """
     </style>
     <script>
         let timer;
-        let mouseMoveTimeout;
         let pauseTimeout;
+        let countdownInterval;
         let countdown = 60;
+        let isPaused = false;
 
         function startSlideshow() {{
             timer = setInterval(nextImage, 5000);
@@ -102,37 +100,74 @@ template = """
         }}
 
         function manualAdvance() {{
+            clearInterval(timer);
             clearTimeout(pauseTimeout);
             resetPauseTimer();
             nextImage();
         }}
 
         function pauseSlideshow() {{
-            clearInterval(timer);
-            clearTimeout(pauseTimeout);
-            countdown = 60;
-            updateCountdown();
-            pauseTimeout = setTimeout(startSlideshow, 60000);
+            if (isPaused) {{
+                isPaused = false;
+                startSlideshow();
+                clearInterval(countdownInterval);
+                document.getElementById('countdown').style.display = 'none';
+            }} else {{
+                clearInterval(timer);
+                clearInterval(countdownInterval);
+                isPaused = true;
+                countdown = 60;
+                updateCountdown();
+                countdownInterval = setInterval(updateCountdown, 1000);
+                pauseTimeout = setTimeout(() => {{
+                    isPaused = false;
+                    startSlideshow();
+                    clearInterval(countdownInterval);
+                    document.getElementById('countdown').style.display = 'none';
+                }}, 60000);
+            }}
         }}
 
         function resetPauseTimer() {{
-            clearTimeout(mouseMoveTimeout);
-            countdown = 30;
-            updateCountdown();
-            mouseMoveTimeout = setTimeout(startSlideshow, 30000);
+            clearTimeout(pauseTimeout);
+            pauseTimeout = setTimeout(() => {{
+                isPaused = false;
+                startSlideshow();
+                clearInterval(countdownInterval);
+                document.getElementById('countdown').style.display = 'none';
+            }}, 60000);
         }}
 
         function updateCountdown() {{
             const countdownElement = document.getElementById('countdown');
-            countdownElement.textContent = countdown + 's';
+            const minutes = Math.floor(countdown / 60);
+            const seconds = countdown % 60;
+            countdownElement.textContent = `${{minutes}}:${{seconds.toString().padStart(2, '0')}}`;
             countdownElement.style.display = countdown > 0 ? 'inline' : 'none';
-            countdown--;
+            if (countdown > 0) {{
+                countdown--;
+            }} else {{
+                clearInterval(countdownInterval);
+            }}
+        }}
+
+        function toggleFullscreen() {{
+            if (!document.fullscreenElement) {{
+                document.documentElement.requestFullscreen();
+            }} else {{
+                if (document.exitFullscreen) {{
+                    document.exitFullscreen();
+                }}
+            }}
         }}
 
         document.addEventListener('DOMContentLoaded', (event) => {{
             startSlideshow();
-            document.addEventListener('mousemove', resetPauseTimer);
-            setInterval(updateCountdown, 1000);
+            document.addEventListener('keydown', (event) => {{
+                if (event.code === 'Space') {{
+                    pauseSlideshow();
+                }}
+            }});
         }});
     </script>
 </head>
@@ -145,17 +180,13 @@ template = """
         <a href="{PREV_IMAGE}">Previous</a> |
         <a href="../index.html">Index</a> |
         <a href="{NEXT_IMAGE}" onclick="manualAdvance(); return false;">Next</a> |
-        <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
+        <a href="#" onclick="toggleFullscreen(); return false;">Full-Screen</a>
+        <a href="#" onclick="pauseSlideshow(); return false;">Pause</a> |
         <span id="countdown" class="timer"></span>
     </div>
 </body>
 </html>
 """
-
-images = [
-    {"file": "IMG_5964.JPG", "id": "10674", "size": "36x12"},
-    # Add the rest of your images here
-]
 
 for i, image in enumerate(images):
     prev_image = f"{images[i-1]['file'].replace('.JPG','').replace('.jpg','')}.html" if i > 0 else f"{images[-1]['file'].replace('.JPG','').replace('.jpg','')}.html"
@@ -165,10 +196,11 @@ for i, image in enumerate(images):
     html_content = template.format(
         IMAGE_ALT=image['id'],
         SIZE=image['size'],
-        IMAGE_SRC=f"{image['file']}",
+        IMAGE_SRC=image['file'],
         PREV_IMAGE=prev_image,
         NEXT_IMAGE=next_image
     )
 
     with open(f"images/{base}.html", "w") as file:
         file.write(html_content)
+
