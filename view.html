@@ -95,7 +95,7 @@
 
         function loadImage(index) {
             const image = images[index];
-            document.querySelector('.content img').src = image.file;
+            document.querySelector('.content img').src = "images/" + image.file;
             document.querySelector('.content img').alt = image.id;
             document.querySelector('.navigation span').textContent = `${image.id} ${image.size}`;
             resetPauseTimer();
@@ -183,7 +183,7 @@
     <div class="navigation">
         <span></span> |
         <a href="#" onclick="prevImage(); return false;">Previous</a> |
-        <a href="index.html">Index</a> |
+        <a href="../index.html">Index</a> |
         <a href="#" onclick="nextImage(); return false;">Next</a> |
         <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
         <span id="countdown" class="timer"></span> |
