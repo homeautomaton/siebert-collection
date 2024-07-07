@@ -34,15 +34,15 @@
             padding: 10px;
         }
         .timer {
-            font-size: 0.8em;
+            font-size: 0.6em;
             margin-left: 10px;
         }
     </style>
     <script>
         let timer;
-        let mouseMoveTimeout;
         let pauseTimeout;
         let countdown = 60;
+        let isPaused = false;
 
         function startSlideshow() {
             timer = setInterval(nextImage, 5000);
@@ -53,37 +53,49 @@
         }
 
         function manualAdvance() {
+            clearInterval(timer);
             clearTimeout(pauseTimeout);
             resetPauseTimer();
             nextImage();
         }
 
         function pauseSlideshow() {
-            clearInterval(timer);
-            clearTimeout(pauseTimeout);
-            countdown = 60;
-            updateCountdown();
-            pauseTimeout = setTimeout(startSlideshow, 60000);
+            if (isPaused) {
+                isPaused = false;
+                startSlideshow();
+            } else {
+                clearInterval(timer);
+                isPaused = true;
+                countdown = 60;
+                updateCountdown();
+                pauseTimeout = setTimeout(startSlideshow, 60000);
+            }
         }
 
         function resetPauseTimer() {
-            clearTimeout(mouseMoveTimeout);
-            countdown = 30;
-            updateCountdown();
-            mouseMoveTimeout = setTimeout(startSlideshow, 30000);
+            clearTimeout(pauseTimeout);
+            pauseTimeout = setTimeout(startSlideshow, 60000);
         }
 
         function updateCountdown() {
             const countdownElement = document.getElementById('countdown');
-            countdownElement.textContent = countdown + 's';
+            const minutes = Math.floor(countdown / 60);
+            const seconds = countdown % 60;
+            countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             countdownElement.style.display = countdown > 0 ? 'inline' : 'none';
-            countdown--;
+            if (countdown > 0) {
+                countdown--;
+                setTimeout(updateCountdown, 1000);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', (event) => {
             startSlideshow();
-            document.addEventListener('mousemove', resetPauseTimer);
-            setInterval(updateCountdown, 1000);
+            document.addEventListener('keydown', (event) => {
+                if (event.code === 'Space') {
+                    pauseSlideshow();
+                }
+            });
         });
     </script>
 </head>
@@ -94,7 +106,7 @@
     <div class="navigation">
         34982 16x12 |
         <a href="IMG_5964.html">Previous</a> |
-        <a href="../index.html">Index</a> |
+        <a href="index.html">Index</a> |
         <a href="IMG_5984.html" onclick="manualAdvance(); return false;">Next</a> |
         <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
         <span id="countdown" class="timer"></span>
