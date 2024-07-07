@@ -45,116 +45,95 @@ images = [
            {"file":"IMG_20240602_140112161.jpg", "id":"00146","size":"4x6"},
            {"file":"IMG_5975.JPG", "id":"00199","size":"16x20"},
            {"file":"IMG_20240602_140141736.jpg", "id":"00200","size":"8x10"}
-         ]  # Add your image filenames here
+         ]
 
 template = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Image {IMAGE_ALT}</title>
+    <title>{IMAGE_ALT}</title>
     <style>
-        body, html {{
+        body {{
+            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            height: 100%;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
         }}
         .content {{
             flex: 1;
             display: flex;
-            justify-content: center;
             align-items: center;
-            overflow: hidden;
+            justify-content: center;
         }}
-        .content img {{
+        img {{
             max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
+            max-height: 90vh;
         }}
         .navigation {{
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 10px;
-            background-color: #f8f8f8;
-            border-top: 1px solid #ddd;
-        }}
-        .navigation a {{
-            margin: 0 10px;
-            text-decoration: none;
-            color: #007BFF;
-        }}
-        .navigation a:hover {{
-            text-decoration: underline;
         }}
         .timer {{
+            font-size: 0.8em;
             margin-left: 10px;
-            font-weight: bold;
-            color: #FF0000;
         }}
     </style>
     <script>
-        let autoAdvanceInterval = 5000; // 5 seconds
-        let pauseDurationMouse = 30000; // 30 seconds for mouse movement
-        let pauseDurationLink = 60000; // 60 seconds for pause link
-        let autoAdvanceTimer, pauseTimer;
-        let isPaused = false;
-        let countdownElement;
-        let countdownTime;
+        let timer;
+        let mouseMoveTimeout;
+        let pauseTimeout;
+        let countdown = 60;
 
-        function updateCountdown() {{
-            if (countdownTime > 0) {{
-                countdownElement.textContent = `Resuming in ${{Math.ceil(countdownTime / 1000)}}s`;
-                countdownTime -= 1000;
-                setTimeout(updateCountdown, 1000);
-            }} else {{
-                countdownElement.textContent = '';
-            }}
+        function startSlideshow() {{
+            timer = setInterval(nextImage, 5000);
         }}
 
         function nextImage() {{
-            if (!isPaused) {{
-                window.location.href = "{NEXT_IMAGE}";
-            }}
-        }}
-
-        function startAutoAdvance() {{
-            autoAdvanceTimer = setInterval(nextImage, autoAdvanceInterval);
-        }}
-
-        function pauseAutoAdvance(duration) {{
-            clearInterval(autoAdvanceTimer);
-            clearTimeout(pauseTimer);
-            isPaused = true;
-            countdownTime = duration;
-            pauseTimer = setTimeout(() => {{
-                isPaused = false;
-                countdownElement.textContent = '';
-                startAutoAdvance();
-            }}, duration);
-            updateCountdown();
+            window.location.href = "{NEXT_IMAGE}";
         }}
 
         function manualAdvance() {{
-            clearTimeout(pauseTimer);
-            isPaused = false;
-            countdownElement.textContent = '';
+            clearTimeout(pauseTimeout);
+            resetPauseTimer();
             nextImage();
         }}
 
         function pauseSlideshow() {{
-            pauseAutoAdvance(pauseDurationLink);
+            clearInterval(timer);
+            clearTimeout(pauseTimeout);
+            countdown = 60;
+            updateCountdown();
+            pauseTimeout = setTimeout(startSlideshow, 60000);
         }}
 
-        document.addEventListener('mousemove', () => pauseAutoAdvance(pauseDurationMouse));
-        document.addEventListener('keydown', () => pauseAutoAdvance(pauseDurationMouse));
+        function resetPauseTimer() {{
+            clearTimeout(mouseMoveTimeout);
+            countdown = 30;
+            updateCountdown();
+            mouseMoveTimeout = setTimeout(startSlideshow, 30000);
+        }}
 
-        window.onload = () => {{
-            countdownElement = document.getElementById('countdown');
-            startAutoAdvance();
-        }};
+        function updateCountdown() {{
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.textContent = countdown + 's';
+            countdownElement.style.display = countdown > 0 ? 'inline' : 'none';
+            countdown--;
+        }}
+
+        document.addEventListener('DOMContentLoaded', (event) => {{
+            startSlideshow();
+            document.addEventListener('mousemove', resetPauseTimer);
+            setInterval(updateCountdown, 1000);
+        }});
     </script>
 </head>
 <body>
@@ -173,11 +152,16 @@ template = """
 </html>
 """
 
+images = [
+    {"file": "IMG_5964.JPG", "id": "10674", "size": "36x12"},
+    # Add the rest of your images here
+]
+
 for i, image in enumerate(images):
-    prev_image = f"{images[i-1]['file'].replace('.jpg','').replace('.JPG','')}.html" if i > 0 else "IMG_20240602_140141736.html"
-    next_image = f"{images[i+1]['file'].replace('.jpg','').replace('.JPG','')}.html" if i < len(images) - 1 else "IMG_5964.html"
-    base = image["file"].replace(".jpg","").replace(".JPG","")
-    
+    prev_image = f"{images[i-1]['file'].replace('.JPG','').replace('.jpg','')}.html" if i > 0 else f"{images[-1]['file'].replace('.JPG','').replace('.jpg','')}.html"
+    next_image = f"{images[i+1]['file'].replace('.JPG','').replace('.jpg','')}.html" if i < len(images) - 1 else f"{images[0]['file'].replace('.JPG','').replace('.jpg','')}.html"
+    base = image["file"].replace(".JPG", "").replace(".jpg", "")
+
     html_content = template.format(
         IMAGE_ALT=image['id'],
         SIZE=image['size'],
@@ -185,6 +169,6 @@ for i, image in enumerate(images):
         PREV_IMAGE=prev_image,
         NEXT_IMAGE=next_image
     )
-    
+
     with open(f"images/{base}.html", "w") as file:
         file.write(html_content)
