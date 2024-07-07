@@ -34,13 +34,14 @@
             padding: 10px;
         }
         .timer {
-            font-size: 0.6em;
+            font-size: 0.8em;
             margin-left: 10px;
         }
     </style>
     <script>
         let timer;
         let pauseTimeout;
+        let countdownInterval;
         let countdown = 60;
         let isPaused = false;
 
@@ -63,18 +64,32 @@
             if (isPaused) {
                 isPaused = false;
                 startSlideshow();
+                clearInterval(countdownInterval);
+                document.getElementById('countdown').style.display = 'none';
             } else {
                 clearInterval(timer);
+                clearInterval(countdownInterval);
                 isPaused = true;
                 countdown = 60;
                 updateCountdown();
-                pauseTimeout = setTimeout(startSlideshow, 60000);
+                countdownInterval = setInterval(updateCountdown, 1000);
+                pauseTimeout = setTimeout(() => {
+                    isPaused = false;
+                    startSlideshow();
+                    clearInterval(countdownInterval);
+                    document.getElementById('countdown').style.display = 'none';
+                }, 60000);
             }
         }
 
         function resetPauseTimer() {
             clearTimeout(pauseTimeout);
-            pauseTimeout = setTimeout(startSlideshow, 60000);
+            pauseTimeout = setTimeout(() => {
+                isPaused = false;
+                startSlideshow();
+                clearInterval(countdownInterval);
+                document.getElementById('countdown').style.display = 'none';
+            }, 60000);
         }
 
         function updateCountdown() {
@@ -85,7 +100,8 @@
             countdownElement.style.display = countdown > 0 ? 'inline' : 'none';
             if (countdown > 0) {
                 countdown--;
-                setTimeout(updateCountdown, 1000);
+            } else {
+                clearInterval(countdownInterval);
             }
         }
 
@@ -106,7 +122,7 @@
     <div class="navigation">
         59281 16x12 |
         <a href="IMG_5967.html">Previous</a> |
-        <a href="index.html">Index</a> |
+        <a href="../index.html">Index</a> |
         <a href="IMG_5998.html" onclick="manualAdvance(); return false;">Next</a> |
         <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
         <span id="countdown" class="timer"></span>
