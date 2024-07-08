@@ -46,6 +46,26 @@
             background-color: rgba(255, 255, 255, 0.8);
             padding: 10px;
         }
+
+        .left, .right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #333;
+            width: calc(20% - 20px); /* Adjust as needed for margin */
+            text-align: center;
+        }
+        
+        .left {
+            left: 0;
+        }
+        
+        .right {
+            right: 0;
+        }
+
         .timer {
             font-size: 0.8em;
             margin-left: 10px;
@@ -209,7 +229,11 @@
             loadImage(currentIndex);
             startSlideshow();
             document.addEventListener('keydown', (event) => {
-                if (event.code === 'Space') {
+                if (event.code === 'Escape') {
+                    resetPauseTimer();
+                } else if (event.code === 'Enter') {
+                    nextImage();
+                } else if (event.code === 'Space') {
                     if (isPaused) {
                         resetPauseTimer();
                     } else {
@@ -222,13 +246,13 @@
 </head>
 <body>
     <div class="left">
-        <div></div>
+        <span></span>
     </div>
     <div class="content">
         <img src="" alt="">
     </div>
     <div class="right">
-        <div></div>
+        <span></span>
     </div>
     <div class="navigation">
         <a href="#" onclick="prevImage(); return false;">Previous</a> |
