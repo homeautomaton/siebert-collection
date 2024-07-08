@@ -128,16 +128,86 @@
             return urlParams.get(param);
         }
 
+        function setBackgroundFromImage(imgElement) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = imgElement.naturalWidth;
+            canvas.height = imgElement.naturalHeight;
+            ctx.drawImage(imgElement, 0, 0);
+            const borderColor = getBorderColor(ctx, canvas.width, canvas.height);
+            //const backgroundColor = getAdjustedBackgroundColor(borderColor);
+            const backgroundColor = borderColor;
+            document.body.style.backgroundColor = backgroundColor;
+        }
+
+        //function getBorderColor(ctx) {
+        //    const borderSample = ctx.getImageData(0, 0, 1, 1).data;
+        //    return `rgb(${borderSample[0]}, ${borderSample[1]}, ${borderSample[2]})`;
+        //}
+
+        function getBorderColor(ctx, width, height) {
+            const sampleSize = 40;
+            const samples = [];
+            const offset = 0.05; // 5%
+        
+            for (let i = 0; i < sampleSize / 4; i++) {
+                // Top border
+                const x1 = Math.floor(Math.random() * width);
+                const y1 = Math.floor(offset * height);
+                samples.push(ctx.getImageData(x1, y1, 1, 1).data);
+        
+                // Bottom border
+                const x2 = Math.floor(Math.random() * width);
+                const y2 = Math.floor((1 - offset) * height);
+                samples.push(ctx.getImageData(x2, y2, 1, 1).data);
+        
+                // Left border
+                const x3 = Math.floor(offset * width);
+                const y3 = Math.floor(Math.random() * height);
+                samples.push(ctx.getImageData(x3, y3, 1, 1).data);
+        
+                // Right border
+                const x4 = Math.floor((1 - offset) * width);
+                const y4 = Math.floor(Math.random() * height);
+                samples.push(ctx.getImageData(x4, y4, 1, 1).data);
+            }
+        
+            const avgColor = samples.reduce(
+                (acc, sample) => {
+                    acc[0] += sample[0];
+                    acc[1] += sample[1];
+                    acc[2] += sample[2];
+                    return acc;
+                },
+                [0, 0, 0]
+            ).map(val => Math.floor(val / sampleSize));
+        
+            return `rgb(${avgColor[0]}, ${avgColor[1]}, ${avgColor[2]})`;
+        }
+        
+
+        function getAdjustedBackgroundColor(rgb) {
+            const rgbValues = rgb.match(/\d+/g).map(Number);
+            const brightness = (rgbValues[0] * 0.299 + rgbValues[1] * 0.587 + rgbValues[2] * 0.114);
+            if (brightness < 128) {
+                rgbValues.forEach((v, i) => rgbValues[i] = Math.min(v + 100, 255));
+            }
+            return `rgb(${rgbValues[0]}, ${rgbValues[1]}, ${rgbValues[2]})`;
+        }
+
         function loadImage(index) {
             const image = images[index];
             const imgElement = document.querySelector('.content img');
             imgElement.src = "images/" + image.file;
+            // setBackgroundFromImage(imgElement);
             imgElement.alt = image.id;
-        
-            const leftSpan = document.querySelector('.left span');
-            leftSpan.textContent = image.size;
-            const rightSpan = document.querySelector('.right span');
-            rightSpan.textContent = image.id;
+            imgElement.onload = function() {
+                const leftSpan = document.querySelector('.left span');
+                leftSpan.textContent = image.size;
+                const rightSpan = document.querySelector('.right span');
+                rightSpan.textContent = image.id;
+                setBackgroundFromImage(imgElement);
+            };
         
             // Check for and add watermark
             const contentDiv = document.querySelector('.content');
@@ -156,7 +226,7 @@
             }
         
             history.replaceState(null, '', `?image=${index}`);
-            resetPauseTimer();
+            //resetPauseTimer();
         }
 
         function nextImage() {
@@ -171,7 +241,7 @@
 
         function startSlideshow() {
             clearInterval(timer);
-            timer = setInterval(nextImage, 5000);
+            timer = setInterval(nextImage, 15000);
         }
 
         function pauseSlideshow() {
@@ -233,6 +303,10 @@
                     resetPauseTimer();
                 } else if (event.code === 'Enter') {
                     nextImage();
+                } else if (event.code === 'ArrowRight') {
+                    nextImage();
+                } else if (event.code === 'ArrowLeft') {
+                    prevImage();
                 } else if (event.code === 'Space') {
                     if (isPaused) {
                         resetPauseTimer();
