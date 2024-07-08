@@ -5,39 +5,32 @@
     <title>Bonnie Siebert Art Collection</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            margin: 0;
+            padding: 0;
             height: 100vh;
-            overflow: hidden;
+            background-color: #f5f5f5;
         }
+        
         .content {
-            flex: 1;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            width: 100%;
+            background-color: #fff;
+            position: relative;
         }
-        .watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            background: rgba(255, 0, 0, 0.5);
-            color: white;
-            padding: 5px;
-            font-size: 20px;
-            font-weight: bold;
-            z-index: 1;
-            pointer-events: none;
-        }
-        img {
+        
+        .content img {
             max-width: 100%;
-            max-height: 90vh;
+            max-height: 100%;
+            display: block;
+            margin: 0 auto;
         }
-
+        
         .left, .right {
             position: absolute;
             top: 50%;
@@ -56,18 +49,33 @@
             right: 10px;
             text-align: right;
         }
-
+        
         .navigation {
-            position: fixed;
-            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             width: 100%;
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.8);
             padding: 10px;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #333;
         }
+        
+        .navigation a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #007bff;
+            cursor: pointer;
+        }
+        
+        .navigation a:hover {
+            text-decoration: underline;
+        }
+        
         .timer {
-            font-size: 0.8em;
-            margin-left: 10px;
+            font-size: 12px;
+            color: #333;
         }
     </style>
     <script>
