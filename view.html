@@ -20,6 +20,19 @@
             align-items: center;
             justify-content: center;
         }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            background: rgba(255, 0, 0, 0.5);
+            color: white;
+            padding: 5px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 1;
+            pointer-events: none;
+        }
         img {
             max-width: 100%;
             max-height: 90vh;
@@ -48,7 +61,7 @@
            {"file":"IMG_5970.JPG", "id":"70291","size":"16x12"},
            {"file":"IMG_5986.JPG", "id":"48307","size":"10x8"},
            {"file":"IMG_5971.JPG", "id":"39512","size":"20x16"},
-           {"file":"IMG_5987.JPG", "id":"15940","size":"15x11"},
+           {"file":"IMG_5987.JPG", "id":"15940","size":"15x11","watermark":"SOLD"},
            {"file":"IMG_5988.JPG", "id":"02837","size":"10x8"},
            {"file":"IMG_5976.JPG", "id":"87564","size":"16x12"},
            {"file":"IMG_5989.JPG", "id":"54120","size":"10x8"},
@@ -99,7 +112,27 @@
             const imgElement = document.querySelector('.content img');
             imgElement.src = "images/" + image.file;
             imgElement.alt = image.id;
-            document.querySelector('.navigation span').textContent = `${image.id} ${image.size}`;
+        
+            // Update navigation text
+            const navSpan = document.querySelector('.navigation span');
+            navSpan.textContent = `${image.id} ${image.size}`;
+        
+            // Check for and add watermark
+            const contentDiv = document.querySelector('.content');
+            // Remove any existing watermark
+            const existingWatermark = document.querySelector('.watermark');
+            if (existingWatermark) {
+                existingWatermark.remove();
+            }
+        
+            // Add new watermark if exists
+            if (image.watermark) {
+                const watermarkDiv = document.createElement('div');
+                watermarkDiv.className = 'watermark';
+                watermarkDiv.textContent = image.watermark;
+                contentDiv.appendChild(watermarkDiv);
+            }
+        
             history.replaceState(null, '', `?image=${index}`);
             resetPauseTimer();
         }
