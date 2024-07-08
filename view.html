@@ -57,6 +57,10 @@
             text-align: center;
             // background-color: rgba(255, 255, 255, 0.8);
         }
+        .top {
+            font-family: Georgia;
+            font-size: 30px;
+        }
         
         .left {
             left: 0;
@@ -135,8 +139,8 @@
             canvas.height = imgElement.naturalHeight;
             ctx.drawImage(imgElement, 0, 0);
             const borderColor = getBorderColor(ctx, canvas.width, canvas.height);
-            //const backgroundColor = getAdjustedBackgroundColor(borderColor);
-            const backgroundColor = borderColor;
+            const backgroundColor = getAdjustedBackgroundColor(borderColor);
+            //const backgroundColor = borderColor;
             document.body.style.backgroundColor = backgroundColor;
         
             const contrastColor = getContrastColor(backgroundColor);
@@ -152,6 +156,39 @@
             return luminance < 128 ? 'white' : 'black';
         }
 
+        function findRepresentativeColor(samples) {
+            let n = samples.length;
+            let minDistanceSum = Infinity;
+            let representativeColor = null;
+            
+            // Function to calculate Euclidean distance between two RGB colors
+            function euclideanDistance(color1, color2) {
+                return Math.sqrt(
+                    Math.pow(color1[0] - color2[0], 2) +
+                    Math.pow(color1[1] - color2[1], 2) +
+                    Math.pow(color1[2] - color2[2], 2)
+                );
+            }
+            
+            // Compute distances and sum for each sample
+            for (let i = 0; i < n; i++) {
+                let distanceSum = 0;
+                for (let j = 0; j < n; j++) {
+                    if (i !== j) {
+                        distanceSum += euclideanDistance(samples[i], samples[j]);
+                    }
+                }
+                
+                // Update if this sample has a lower cumulative distance
+                if (distanceSum < minDistanceSum) {
+                    minDistanceSum = distanceSum;
+                    representativeColor = samples[i];
+                }
+            }
+            
+            return representativeColor;
+        }
+
         //function getBorderColor(ctx) {
         //    const borderSample = ctx.getImageData(0, 0, 1, 1).data;
         //    return `rgb(${borderSample[0]}, ${borderSample[1]}, ${borderSample[2]})`;
@@ -165,36 +202,39 @@
             for (let i = 0; i < sampleSize / 4; i++) {
                 // Top border
                 const x1 = Math.floor(Math.random() * width);
-                const y1 = Math.floor(offset * height);
+                const y1 = offset * height + Math.floor(offset * height);
                 samples.push(ctx.getImageData(x1, y1, 1, 1).data);
         
                 // Bottom border
                 const x2 = Math.floor(Math.random() * width);
-                const y2 = Math.floor((1 - offset) * height);
+                const y2 = Math.floor((1 - offset) * height) - offset * height;
                 samples.push(ctx.getImageData(x2, y2, 1, 1).data);
         
                 // Left border
-                const x3 = Math.floor(offset * width);
+                const x3 = offset * width + Math.floor(offset * width);
                 const y3 = Math.floor(Math.random() * height);
                 samples.push(ctx.getImageData(x3, y3, 1, 1).data);
         
                 // Right border
-                const x4 = Math.floor((1 - offset) * width);
+                const x4 = Math.floor((1 - offset) * width) - offset * width;
                 const y4 = Math.floor(Math.random() * height);
                 samples.push(ctx.getImageData(x4, y4, 1, 1).data);
             }
         
-            const avgColor = samples.reduce(
-                (acc, sample) => {
-                    acc[0] += sample[0];
-                    acc[1] += sample[1];
-                    acc[2] += sample[2];
-                    return acc;
-                },
-                [0, 0, 0]
-            ).map(val => Math.floor(val / sampleSize));
+
+            const sampleColor = findRepresentativeColor( samples );
+
+            //const avgColor = samples.reduce(
+            //    (acc, sample) => {
+            //        acc[0] += sample[0];
+            //        acc[1] += sample[1];
+            //        acc[2] += sample[2];
+            //        return acc;
+            //    },
+            //    [0, 0, 0]
+            //).map(val => Math.floor(val / sampleSize));
         
-            return `rgb(${avgColor[0]}, ${avgColor[1]}, ${avgColor[2]})`;
+            return `rgb(${sampleColor[0]}, ${sampleColor[1]}, ${sampleColor[2]})`;
         }
         
 
@@ -205,6 +245,11 @@
                 rgbValues.forEach((v, i) => rgbValues[i] = Math.min(v + 100, 255));
             }
             return `rgb(${rgbValues[0]}, ${rgbValues[1]}, ${rgbValues[2]})`;
+        }
+
+        function newBackground() {
+            const imgElement = document.querySelector('.content img');
+            setBackgroundFromImage(imgElement);
         }
 
         function loadImage(index) {
@@ -314,7 +359,7 @@
                 if (event.code === 'Escape') {
                     resetPauseTimer();
                 } else if (event.code === 'Enter') {
-                    nextImage();
+                    newBackground();
                 } else if (event.code === 'ArrowRight') {
                     nextImage();
                 } else if (event.code === 'ArrowLeft') {
@@ -331,12 +376,9 @@
     </script>
 </head>
 <body>
-    <div class="left">
-        <span></span>
-    </div>
-    <div class="content">
-        <img src="" alt="">
-    </div>
+    <div class="top"> <span>The Siebert Collection</span> </div>
+    <div class="left"> <span></span> </div>
+    <div class="content"> <img src="" alt=""> </div>
     <div class="right">
         <span></span>
     </div>
