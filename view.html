@@ -53,9 +53,9 @@
             transform: translateY(-50%);
             font-family: Arial, sans-serif;
             font-size: 16px;
-            color: #333;
             width: calc(20% - 20px); /* Adjust as needed for margin */
             text-align: center;
+            // background-color: rgba(255, 255, 255, 0.8);
         }
         
         .left {
@@ -138,6 +138,18 @@
             //const backgroundColor = getAdjustedBackgroundColor(borderColor);
             const backgroundColor = borderColor;
             document.body.style.backgroundColor = backgroundColor;
+        
+            const contrastColor = getContrastColor(backgroundColor);
+            document.querySelector('.left span').style.color = contrastColor;
+            document.querySelector('.right span').style.color = contrastColor;
+        }
+        
+        function getContrastColor(rgb) {
+            const [r, g, b] = rgb.match(/\d+/g).map(Number);
+            const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        
+            // If luminance is low, return white for contrast; otherwise, return black
+            return luminance < 128 ? 'white' : 'black';
         }
 
         //function getBorderColor(ctx) {
@@ -207,23 +219,23 @@
                 const rightSpan = document.querySelector('.right span');
                 rightSpan.textContent = image.id;
                 setBackgroundFromImage(imgElement);
+        
+                // Check for and add watermark
+                const contentDiv = document.querySelector('.content');
+                // Remove any existing watermark
+                const existingWatermark = document.querySelector('.watermark');
+                if (existingWatermark) {
+                    existingWatermark.remove();
+                }
+        
+                // Add new watermark if exists
+                if (image.watermark) {
+                    const watermarkDiv = document.createElement('div');
+                    watermarkDiv.className = 'watermark';
+                    watermarkDiv.textContent = image.watermark;
+                    contentDiv.appendChild(watermarkDiv);
+                }
             };
-        
-            // Check for and add watermark
-            const contentDiv = document.querySelector('.content');
-            // Remove any existing watermark
-            const existingWatermark = document.querySelector('.watermark');
-            if (existingWatermark) {
-                existingWatermark.remove();
-            }
-        
-            // Add new watermark if exists
-            if (image.watermark) {
-                const watermarkDiv = document.createElement('div');
-                watermarkDiv.className = 'watermark';
-                watermarkDiv.textContent = image.watermark;
-                contentDiv.appendChild(watermarkDiv);
-            }
         
             history.replaceState(null, '', `?image=${index}`);
             //resetPauseTimer();
