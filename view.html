@@ -37,6 +37,26 @@
             max-width: 100%;
             max-height: 90vh;
         }
+
+        .left, .right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .left {
+            left: 10px;
+            text-align: left;
+        }
+        
+        .right {
+            right: 10px;
+            text-align: right;
+        }
+
         .navigation {
             position: fixed;
             bottom: 0;
@@ -113,9 +133,10 @@
             imgElement.src = "images/" + image.file;
             imgElement.alt = image.id;
         
-            // Update navigation text
-            const navSpan = document.querySelector('.navigation span');
-            navSpan.textContent = `${image.id} ${image.size}`;
+            const leftSpan = document.querySelector('.left span');
+            leftSpan.textContent = image.size;
+            const rightSpan = document.querySelector('.right span');
+            rightSpan.textContent = image.id;
         
             // Check for and add watermark
             const contentDiv = document.querySelector('.content');
@@ -219,17 +240,22 @@
     </script>
 </head>
 <body>
+    <div class="left">
+        <div></div>
+    </div>
     <div class="content">
         <img src="" alt="">
     </div>
+    <div class="right">
+        <div></div>
+    </div>
     <div class="navigation">
-        <span></span> |
         <a href="#" onclick="prevImage(); return false;">Previous</a> |
         <a href="../index.html">Index</a> |
         <a href="#" onclick="nextImage(); return false;">Next</a> |
+        <a href="#" onclick="toggleFullscreen(); return false;">Full-Screen</a>
         <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
         <span id="countdown" class="timer"></span> |
-        <a href="#" onclick="toggleFullscreen(); return false;">Full-Screen</a>
     </div>
 </body>
 </html>
