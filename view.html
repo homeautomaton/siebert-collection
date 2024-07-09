@@ -4,22 +4,40 @@
     <meta charset="UTF-8">
     <title>Bonnie Siebert Art Collection</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        body, html {
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            padding: 0;
+            height: 100%;
             overflow: hidden;
+            font-family: Arial, sans-serif;
         }
+
         .content {
-            flex: 1;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 90vh; /* Full viewport height */
+            overflow: hidden;
+            position: relative;
         }
+
+        .content img {
+            max-width: 100%;
+            max-height: 100%;
+            transition: transform 0.5s;
+        }
+
+        .zoomed_1 {
+            transform: scale(1.5);
+            transform-origin: center;
+        }
+
+        .zoomed_2 {
+            transform: scale(3.0);
+            transform-origin: center;
+        }
+
         .watermark {
             position: absolute;
             top: 50%;
@@ -32,10 +50,6 @@
             font-weight: bold;
             z-index: 1;
             pointer-events: none;
-        }
-        img {
-            max-width: 100%;
-            max-height: 90vh;
         }
 
         .navigation {
@@ -60,10 +74,14 @@
         .top {
             font-family: Georgia;
             font-size: 30px;
+            display: flex;
+            justify-content: center;
         }
         .top2 {
             // font-family: Georgia;
             font-size: 15px;
+            display: flex;
+            justify-content: center;
         }
         
         .left {
@@ -130,6 +148,7 @@
         let countdownInterval;
         let pauseTimeout;
         let isPaused = false;
+        let zoom = 0;
 
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -260,8 +279,10 @@
             const image = images[index];
             const imgElement = document.querySelector('.content img');
             imgElement.src = "images/" + image.file;
-            // setBackgroundFromImage(imgElement);
             imgElement.alt = image.id;
+            imgElement.classList.remove('zoomed_1');
+            imgElement.classList.remove('zoomed_2');
+
             imgElement.onload = function() {
                 const leftSpan = document.querySelector('.left span');
                 leftSpan.textContent = image.size;
@@ -354,6 +375,18 @@
             }
         }
 
+        function toggleZoom() {
+            if (!isPaused) startSlideshow();   // reset timer
+            const imgElement = document.querySelector('.content img');
+            zoom += 1;
+            if ( zoom > 2 ) zoom = 0;
+            imgElement.classList.remove('zoomed_1');
+            imgElement.classList.remove('zoomed_2');
+            if ( zoom > 0 ) {
+                imgElement.classList.add('zoomed_' + zoom);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', (event) => {
             const imageIndex = getQueryParam('image');
             currentIndex = imageIndex !== null ? parseInt(imageIndex) : 0;
@@ -363,6 +396,7 @@
                 if (event.code === 'Escape') {
                     resetPauseTimer();
                 } else if (event.code === 'Enter') {
+                    toggleZoom();
                     newBackground();
                 } else if (event.code === 'ArrowRight') {
                     nextImage();
@@ -392,6 +426,7 @@
         <a href="../index.html">Index</a> |
         <a href="#" onclick="nextImage(); return false;">Next</a> |
         <a href="#" onclick="toggleFullscreen(); return false;">Full-Screen</a> |
+        <a href="#" onclick="toggleZoom(); return false;">Zoom</a> |
         <a href="#" onclick="pauseSlideshow(); return false;">Pause</a>
         <span id="countdown" class="timer"></span>
     </div>
